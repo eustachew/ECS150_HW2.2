@@ -1,6 +1,7 @@
 #ifndef _QUEUE_H
 #define _QUEUE_H
 
+typedef struct task task_t;
 /*
  * queue_t - Queue type
  *
