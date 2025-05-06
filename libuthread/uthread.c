@@ -10,13 +10,34 @@
 #include "uthread.h"
 #include "queue.h"
 
+
+//Defining the TCB
+enum uthreadstate {
+	UTHREAD_READY,
+	UTHREAD_RUNNING,
+	UTHREAD_BLOCKED,
+	UTHREAD_EXITED
+};
+
+struct uthread_tcb {
+	uthread_ctx_t context;
+	void *stack;
+	enum uthreadstate state;
+};
+
+//TCB global variables
+queue_t ready_queue;
+struct uthread_tcb* current_thread;
+struct uthread_t* idle_thread;
+
+
 struct uthread_tcb {
 	/* TODO Phase 2 */
 };
 
 struct uthread_tcb *uthread_current(void)
 {
-	/* TODO Phase 2/3 */
+	return current_thread;
 }
 
 void uthread_yield(void)
