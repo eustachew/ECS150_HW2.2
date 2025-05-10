@@ -52,7 +52,6 @@ int uthread_create(uthread_func_t func, void *arg)
 int uthread_run(bool preempt, uthread_func_t func, void *arg)
 {
 	/* TODO Phase 2 */
-	ready_queue = queue_create();
 	blocked_queue = queue_create();
 	completed_queue = queue_create();
 
