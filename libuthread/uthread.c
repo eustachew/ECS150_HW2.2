@@ -10,34 +10,28 @@
 #include "uthread.h"
 #include "queue.h"
 
+#define READY 0
+#define RUNNING 1
+#define BLOCKED 2
+#define COMPLETED 3
 
-//Defining the TCB
-enum uthreadstate {
-	UTHREAD_READY,
-	UTHREAD_RUNNING,
-	UTHREAD_BLOCKED,
-	UTHREAD_EXITED
-};
-
-struct uthread_tcb {
-	uthread_ctx_t context;
-	void *stack;
-	enum uthreadstate state;
-};
-
-//TCB global variables
 queue_t ready_queue;
-struct uthread_tcb* current_thread;
-struct uthread_t* idle_thread;
+queue_t blocked_queue;
+queue_t completed_queue;
 
 
 struct uthread_tcb {
 	/* TODO Phase 2 */
+	int id;
+	uthread_ctx_t *context;
+	int state;
+	int *stack_pointer;
+
 };
 
 struct uthread_tcb *uthread_current(void)
 {
-	return current_thread;
+	/* TODO Phase 2/3 */
 }
 
 void uthread_yield(void)
@@ -58,6 +52,12 @@ int uthread_create(uthread_func_t func, void *arg)
 int uthread_run(bool preempt, uthread_func_t func, void *arg)
 {
 	/* TODO Phase 2 */
+	ready_queue = queue_create();
+	blocked_queue = queue_create();
+	completed_queue = queue_create();
+
+	struct uthread_tcb *initial_thread = malloc(sizeof(struct uthread_tcb));
+
 }
 
 void uthread_block(void)
