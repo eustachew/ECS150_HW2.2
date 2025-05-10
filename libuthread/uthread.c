@@ -19,10 +19,13 @@ queue_t ready_queue;
 queue_t blocked_queue;
 queue_t completed_queue;
 
-static int available_ID = 0;
+struct uthread_tcb* current_thread; 
 
-struct uthread_tcb* current_thread;
-
+int assign_thread_ID(){
+	static int available_ID = -1;
+	available_ID++;
+	return available_ID;
+}
 
 struct uthread_tcb {
 	/* TODO Phase 2 */
@@ -52,6 +55,12 @@ void uthread_exit(void)
 int uthread_create(uthread_func_t func, void *arg)
 {
 	/* TODO Phase 2 */
+	struct uthread_tcb* thread = malloc(sizeof(struct uthread_tcb));
+	thread->context = (uthread_ctx_t*)(malloc(sizeof(uthread_ctx_t)));
+	thread->stack_pointer = uthread_ctx_alloc_stack;
+	thread->state = READY;
+	thread->id = assign_thread_ID;
+	return 0;
 }
 
 int uthread_run(bool preempt, uthread_func_t func, void *arg)
@@ -65,8 +74,7 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
 	//Registering the main thread as the "idle" thread
 	struct uthread_tcb *idle_thread = malloc(sizeof(struct uthread_tcb));
 	idle_thread->context = (uthread_ctx_t*)(malloc(sizeof(uthread_ctx_t)));
-	idle_thread->id = available_ID;
-	available_ID++;
+	idle_thread->id = assign_thread_ID;
 	idle_thread->stack_pointer = NULL;
 	idle_thread->state = RUNNING;
 	current_thread = idle_thread;
