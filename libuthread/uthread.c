@@ -58,6 +58,12 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
 
 	struct uthread_tcb *initial_thread = malloc(sizeof(struct uthread_tcb));
 
+	ready_queue = queue_create();
+	blocked_queue = queue_create();
+	completed_queue = queue_create();
+
+	struct uthread_tcb *initial_thread = malloc(sizeof(struct uthread_tcb));
+
 }
 
 void uthread_block(void)

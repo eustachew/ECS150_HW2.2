@@ -75,8 +75,8 @@ int queue_dequeue(queue_t queue, void **data)
 			*data = queue->head->data;
 			free(queue->head);
 			queue->size--;
-			queue->head == NULL;
-			queue->tail == NULL;
+			//queue->head == NULL;
+			//queue->tail == NULL;
 		}
 		else{
 			task_t *temp = queue->head->next;
@@ -84,9 +84,9 @@ int queue_dequeue(queue_t queue, void **data)
 			free(queue->head);
 			queue->head = temp;
 			queue->size--;
-			return 0;
 		}
 	}
+	return 0;
 }
 
 int queue_delete(queue_t queue, void *data)

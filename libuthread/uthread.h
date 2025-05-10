@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 
+
 /*
  * uthread_func_t - Thread function type
  * @arg: Argument to be passed to the thread
