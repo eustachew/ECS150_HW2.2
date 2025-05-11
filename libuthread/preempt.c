@@ -25,12 +25,12 @@ void preempt_enable(void)
 	/* TODO Phase 4 */
 }
 
-void preempt_start(bool preempt)
+void preempt_start(bool preempt) //Do
 {
 	/* TODO Phase 4 */
 }
 
-void preempt_stop(void)
+void preempt_stop(void) //Do 
 {
 	/* TODO Phase 4 */
 }

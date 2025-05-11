@@ -9,12 +9,12 @@ struct semaphore {
 	/* TODO Phase 3 */
 };
 
-sem_t sem_create(size_t count)
+sem_t sem_create(size_t count) //Do
 {
 	/* TODO Phase 3 */
 }
 
-int sem_destroy(sem_t sem)
+int sem_destroy(sem_t sem) //Do
 {
 	/* TODO Phase 3 */
 }

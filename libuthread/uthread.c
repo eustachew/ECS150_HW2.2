@@ -17,7 +17,7 @@
 
 queue_t ready_queue;
 queue_t blocked_queue;
-queue_t completed_queue;
+queue_t completed_queue; //Zombie//
 
 struct uthread_tcb* current_thread; 
 
@@ -47,9 +47,12 @@ void uthread_yield(void)
 	/* TODO Phase 2 */
 }
 
-void uthread_exit(void)
+void uthread_exit(void) //Do
 {
 	/* TODO Phase 2 */
+	current_thread->state = completed_queue;
+	uthread_yield();
+
 }
 
 int uthread_create(uthread_func_t func, void *arg)
@@ -85,13 +88,20 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
 
 }
 
-void uthread_block(void)
+void uthread_block(void) //Do
 {
 	/* TODO Phase 3 */
+	current_thread->state = blocked_queue;
+	queue_enqueue(blocked_queue, current_thread);
+	uthread_yield();
 }
 
-void uthread_unblock(struct uthread_tcb *uthread)
+void uthread_unblock(struct uthread_tcb *uthread) //Do
 {
 	/* TODO Phase 3 */
+	if (uthread->state == blocked_queue) {
+		uthread->state = ready_queue;
+		queue_enqueue(ready_queue, uthread);
+	}
 }
 
