@@ -32,7 +32,7 @@ struct uthread_tcb {
 	int id;
 	uthread_ctx_t *context;
 	int state;
-	int *stack_pointer;
+	void *stack_pointer;
 
 };
 
@@ -45,18 +45,22 @@ struct uthread_tcb *uthread_current(void)
 void uthread_yield(void)
 {
 	/* TODO Phase 2 */
+	preempt_disable();
 
 	struct uthread_tcb *nextThread;
 	struct uthread_tcb *prevThread = current_thread;
 
 	//save current thread to ready queue if not completed
-	if (prevThread -> state != COMPLETED) {
-		prevThread ->state = READY;
+	if (prevThread->state != COMPLETED) {
+		prevThread->state = READY;
 		queue_enqueue(ready_queue, prevThread);
 	}
 
 	//dequeue next thread from ready queue & switch context to that thread
-	queue_dequeue(ready_queue, (void**)&nextThread);
+	if(queue_dequeue(ready_queue, (void**)&nextThread) == -1){
+		preempt_enable();
+		return;
+	}
 	nextThread->state = RUNNING;
 	current_thread = nextThread;
 	
@@ -64,12 +68,15 @@ void uthread_yield(void)
 	uthread_ctx_t *nextContext = nextThread->context;
 	uthread_ctx_switch(prevContext, nextContext);
 
+	preempt_enable();
+
 }
 
 void uthread_exit(void) //Do
 {
 	/* TODO Phase 2 */
 	current_thread->state = COMPLETED;
+	queue_enqueue(completed_queue, current_thread);
 	uthread_yield();
 
 }
@@ -82,14 +89,21 @@ int uthread_create(uthread_func_t func, void *arg)
 	//creating the new thread itself
 	struct uthread_tcb* thread = malloc(sizeof(struct uthread_tcb));
 	thread->context = (uthread_ctx_t*)(malloc(sizeof(uthread_ctx_t)));
-	thread->stack_pointer = uthread_ctx_alloc_stack;
+	thread->stack_pointer = uthread_ctx_alloc_stack();
+
+	if(!thread || !thread->context){
+		return -1;
+	}
 
 	if(uthread_ctx_init(thread->context, thread->stack_pointer, func, arg) == -1){
+		free(thread->stack_pointer);
+		free(thread->context);
+		free(thread);
 		return -1;
 	}
 
 	thread->state = READY;
-	thread->id = assign_thread_ID;
+	thread->id = assign_thread_ID();
 
 	//queueing the new thread
 	if(queue_enqueue(ready_queue, thread) == -1 ){
@@ -116,7 +130,12 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
 	//Registering the main thread as the "idle" thread
 	struct uthread_tcb *idle_thread = malloc(sizeof(struct uthread_tcb));
 	idle_thread->context = (uthread_ctx_t*)(malloc(sizeof(uthread_ctx_t)));
-	idle_thread->id = assign_thread_ID;
+
+	if(!idle_thread || !idle_thread->context){
+		return -1;
+	}
+
+	idle_thread->id = assign_thread_ID();
 	idle_thread->stack_pointer = NULL;
 	idle_thread->state = RUNNING;
 	current_thread = idle_thread;
@@ -162,6 +181,7 @@ void uthread_unblock(struct uthread_tcb *uthread) //Do
 	/* TODO Phase 3 */
 	if (uthread->state == BLOCKED) {
 		uthread->state = READY;
+		queue_dequeue(blocked_queue, uthread);
 		queue_enqueue(ready_queue, uthread);
 	}
 }
