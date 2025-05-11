@@ -115,14 +115,17 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
 	//Stop preemption since now we have no more threads to run
 	preempt_stop();
 
-	while(queue_length(completed_queue) > 0){
-		
-		(queue_dequeue());
+	//free all memory
+	if(queue_length(completed_queue) > 0){
+		queue_destroy(completed_queue);
 	}
 
+	queue_destroy(blocked_queue);
+	queue_destroy(ready_queue);
+	free(current_thread->context);
+	free(current_thread);
 
-
-
+	return 0;
 }
 
 void uthread_block(void) //Do

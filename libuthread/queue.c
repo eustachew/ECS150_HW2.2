@@ -18,6 +18,11 @@ struct queue {
 
 };
 
+void free_custom(queue_t queue, void *data){
+	(void)queue;
+	free(data);
+}
+
 queue_t queue_create(void)
 {
 	/* TODO Phase 1 */
@@ -34,6 +39,7 @@ int queue_destroy(queue_t queue)
 	if(queue == NULL || queue->size > 0){
 		return -1;
 	}
+	queue_iterate(queue, free_custom);
 	free(queue);
 	return 0;
 }
