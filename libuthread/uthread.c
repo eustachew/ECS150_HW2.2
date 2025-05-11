@@ -160,7 +160,7 @@ void uthread_block(void) //Do
 void uthread_unblock(struct uthread_tcb *uthread) //Do
 {
 	/* TODO Phase 3 */
-	if (uthread->state == blocked_queue) {
+	if (uthread->state == BLOCKED) {
 		uthread->state = READY;
 		queue_enqueue(ready_queue, uthread);
 	}
