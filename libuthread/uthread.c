@@ -58,11 +58,27 @@ void uthread_exit(void) //Do
 int uthread_create(uthread_func_t func, void *arg)
 {
 	/* TODO Phase 2 */
+	preempt_disable();
+
+	//creating the new thread itself
 	struct uthread_tcb* thread = malloc(sizeof(struct uthread_tcb));
 	thread->context = (uthread_ctx_t*)(malloc(sizeof(uthread_ctx_t)));
 	thread->stack_pointer = uthread_ctx_alloc_stack;
+
+	if(uthread_ctx_init(thread->context, thread->stack_pointer, func, arg) == -1){
+		return -1;
+	}
+
 	thread->state = READY;
 	thread->id = assign_thread_ID;
+
+	//queueing the new thread
+	if(queue_enqueue(ready_queue, thread) == -1 ){
+		return -1;
+	}
+
+	preempt_enable();
+
 	return 0;
 }
 
@@ -74,6 +90,10 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
 	blocked_queue = queue_create();
 	completed_queue = queue_create();
 
+	if(ready_queue == NULL || blocked_queue == NULL || completed_queue == NULL){
+		return -1;
+	}
+
 	//Registering the main thread as the "idle" thread
 	struct uthread_tcb *idle_thread = malloc(sizeof(struct uthread_tcb));
 	idle_thread->context = (uthread_ctx_t*)(malloc(sizeof(uthread_ctx_t)));
@@ -84,6 +104,23 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
 
 	//Create out initial thread
 	uthread_create(func, arg);
+
+	//Start preemption if it is requested
+	preempt_start(preempt);
+
+	while(queue_length(ready_queue) > 0){
+		uthread_yield();
+	}
+
+	//Stop preemption since now we have no more threads to run
+	preempt_stop();
+
+	while(queue_length(completed_queue) > 0){
+		
+		(queue_dequeue());
+	}
+
+
 
 
 }
