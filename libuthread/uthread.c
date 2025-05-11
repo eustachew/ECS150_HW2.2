@@ -122,7 +122,12 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
 	current_thread = idle_thread;
 
 	//Create out initial thread
-	uthread_create(func, arg);
+	if(uthread_create(func, arg) == -1){
+		queue_destroy(ready_queue);
+		queue_destroy(blocked_queue);
+		queue_destroy(completed_queue);
+		return -1;
+	}
 
 	//Start preemption if it is requested
 	preempt_start(preempt);
@@ -135,10 +140,7 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
 	preempt_stop();
 
 	//free all memory
-	if(queue_length(completed_queue) > 0){
-		queue_destroy(completed_queue);
-	}
-
+	queue_destroy(completed_queue);
 	queue_destroy(blocked_queue);
 	queue_destroy(ready_queue);
 	free(current_thread->context);
