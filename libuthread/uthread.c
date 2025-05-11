@@ -45,6 +45,25 @@ struct uthread_tcb *uthread_current(void)
 void uthread_yield(void)
 {
 	/* TODO Phase 2 */
+
+	struct uthread_tcb *nextThread;
+	struct uthread_tcb *prevThread = current_thread;
+
+	//save current thread to ready queue if not completed
+	if (prevThread -> state != COMPLETED) {
+		prevThread ->state = READY;
+		queue_enqueue(ready_queue, prevThread);
+	}
+
+	//dequeue next thread from ready queue & switch context to that thread
+	queue_dequeue(ready_queue, (void**)&nextThread);
+	nextThread->state = RUNNING;
+	current_thread = nextThread;
+	
+	uthread_ctx_t *prevContext = prevThread->context;
+	uthread_ctx_t *nextContext = nextThread->context;
+	uthread_ctx_switch(prevContext, nextContext);
+
 }
 
 void uthread_exit(void) //Do
