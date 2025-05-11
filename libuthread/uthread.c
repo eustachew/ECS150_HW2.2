@@ -50,7 +50,7 @@ void uthread_yield(void)
 void uthread_exit(void) //Do
 {
 	/* TODO Phase 2 */
-	current_thread->state = completed_queue;
+	current_thread->state = COMPLETED;
 	uthread_yield();
 
 }
@@ -91,7 +91,7 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
 void uthread_block(void) //Do
 {
 	/* TODO Phase 3 */
-	current_thread->state = blocked_queue;
+	current_thread->state = BLOCKED;
 	queue_enqueue(blocked_queue, current_thread);
 	uthread_yield();
 }
@@ -100,7 +100,7 @@ void uthread_unblock(struct uthread_tcb *uthread) //Do
 {
 	/* TODO Phase 3 */
 	if (uthread->state == blocked_queue) {
-		uthread->state = ready_queue;
+		uthread->state = READY;
 		queue_enqueue(ready_queue, uthread);
 	}
 }
