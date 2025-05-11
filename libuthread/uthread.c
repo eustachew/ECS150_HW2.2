@@ -75,8 +75,13 @@ void uthread_yield(void)
 void uthread_exit(void) //Do
 {
 	/* TODO Phase 2 */
+	preempt_disable();
+
 	current_thread->state = COMPLETED;
 	queue_enqueue(completed_queue, current_thread);
+
+	preempt_enable();
+
 	uthread_yield();
 
 }
@@ -88,12 +93,17 @@ int uthread_create(uthread_func_t func, void *arg)
 
 	//creating the new thread itself
 	struct uthread_tcb* thread = malloc(sizeof(struct uthread_tcb));
-	thread->context = (uthread_ctx_t*)(malloc(sizeof(uthread_ctx_t)));
-	thread->stack_pointer = uthread_ctx_alloc_stack();
 
-	if(!thread || !thread->context){
+	if(!thread) return -1;
+
+	thread->context = (uthread_ctx_t*)(malloc(sizeof(uthread_ctx_t)));
+
+	if(!thread->context){
+		free(thread);
 		return -1;
 	}
+
+	thread->stack_pointer = uthread_ctx_alloc_stack();
 
 	if(uthread_ctx_init(thread->context, thread->stack_pointer, func, arg) == -1){
 		free(thread->stack_pointer);
@@ -107,6 +117,9 @@ int uthread_create(uthread_func_t func, void *arg)
 
 	//queueing the new thread
 	if(queue_enqueue(ready_queue, thread) == -1 ){
+		uthread_ctx_destroy_stack(thread->stack_pointer);
+		free(thread->context);
+		free(thread);
 		return -1;
 	}
 
@@ -124,14 +137,29 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
 	completed_queue = queue_create();
 
 	if(ready_queue == NULL || blocked_queue == NULL || completed_queue == NULL){
+		queue_destroy(ready_queue);
+		queue_destroy(blocked_queue);
+		queue_destroy(completed_queue);
 		return -1;
 	}
 
 	//Registering the main thread as the "idle" thread
 	struct uthread_tcb *idle_thread = malloc(sizeof(struct uthread_tcb));
+
+	if(!idle_thread){
+		queue_destroy(ready_queue);
+		queue_destroy(blocked_queue);
+		queue_destroy(completed_queue);
+		return -1;
+	}
+
 	idle_thread->context = (uthread_ctx_t*)(malloc(sizeof(uthread_ctx_t)));
 
-	if(!idle_thread || !idle_thread->context){
+	if(!idle_thread->context){
+		free(idle_thread);
+		queue_destroy(ready_queue);
+		queue_destroy(blocked_queue);
+		queue_destroy(completed_queue);
 		return -1;
 	}
 
@@ -159,6 +187,7 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
 	preempt_stop();
 
 	//free all memory
+	queue_iterate(completed_queue, free_custom);
 	queue_destroy(completed_queue);
 	queue_destroy(blocked_queue);
 	queue_destroy(ready_queue);
@@ -171,18 +200,28 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
 void uthread_block(void) //Do
 {
 	/* TODO Phase 3 */
+	preempt_disable();
+
 	current_thread->state = BLOCKED;
 	queue_enqueue(blocked_queue, current_thread);
+
+	preempt_enable();
+
 	uthread_yield();
+
 }
 
 void uthread_unblock(struct uthread_tcb *uthread) //Do
 {
 	/* TODO Phase 3 */
+	preempt_disable();
+
 	if (uthread->state == BLOCKED) {
 		uthread->state = READY;
-		queue_dequeue(blocked_queue, uthread);
+		queue_delete(blocked_queue, uthread);
 		queue_enqueue(ready_queue, uthread);
 	}
+
+	preempt_enable();
 }
 

@@ -1,6 +1,7 @@
 #ifndef _QUEUE_H
 #define _QUEUE_H
 
+
 typedef struct task task_t;
 /*
  * queue_t - Queue type
@@ -107,5 +108,8 @@ int queue_iterate(queue_t queue, queue_func_t func);
  * Return: -1 if @queue is NULL. Length of @queue otherwise.
  */
 int queue_length(queue_t queue);
+
+void free_custom(queue_t queue, void *data);
+
 
 #endif /* _QUEUE_H */
