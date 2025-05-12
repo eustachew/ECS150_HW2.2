@@ -1,5 +1,5 @@
 # Application objects to compile
-objs := queue.o uthread.o #preempt.o context.o sem.o 
+objs := queue.o uthread.o preempt.o context.o #sem.o 
 
 # Target library
 lib := libuthread.a
