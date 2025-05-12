@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "queue.h"
 
@@ -46,7 +47,7 @@ int queue_destroy(queue_t queue)
 int queue_enqueue(queue_t queue, void *data)
 {
 	/* TODO Phase 1 */
-	if(queue == NULL){
+	if(queue == NULL || data == NULL){
 		return -1;
 	}
 	else{
@@ -110,6 +111,7 @@ int queue_delete(queue_t queue, void *data)
 			queue->tail = NULL;
 			free(queue->head);
 			queue->size--;
+			return 0;
 		}
 	}
 
@@ -127,17 +129,17 @@ int queue_delete(queue_t queue, void *data)
 	if(current_node == NULL){
 		return -1;
 	}
-
 	if(current_node == queue->head){
 		queue->head = current_node->next;
 	}
-
-	if(current_node == queue->tail){
+	else if(current_node == queue->tail){
 		queue->tail = previous_node;
 	}
+
 	else{
 		previous_node->next = current_node->next;
 	}
+
 
 	free(current_node);
 	current_node = NULL;
