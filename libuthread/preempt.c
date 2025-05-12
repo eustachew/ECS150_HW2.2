@@ -28,6 +28,10 @@ void preempt_enable(void)
 void preempt_start(bool preempt) //Do
 {
 	/* TODO Phase 4 */
+	if(!preempt){
+		return;
+	}
+
 }
 
 void preempt_stop(void) //Do 
