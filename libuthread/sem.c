@@ -50,15 +50,14 @@ int sem_down(sem_t sem)
 
 	
 	if (sem->count > 0) {
-		sem->count--;
 		preempt_enable();
 	} 
 		else {
 		queue_enqueue(sem->waitQueue, uthread_current);
 		uthread_block(); //switches context
-		sem->count--;
 		
 	}
+	sem->count--;
 
 	preempt_enable();
 	return 0;
