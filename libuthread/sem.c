@@ -55,7 +55,7 @@ int sem_down(sem_t sem)
 	} 
 		else {
 		queue_enqueue(sem->waitQueue, uthread_current);
-		uthread_block(); //swithces context
+		uthread_block(); //switches context
 
 		sem->count--;
 	}
@@ -63,12 +63,6 @@ int sem_down(sem_t sem)
 	preempt_enable();
 	return 0;
 	
-
-
-
-
-
-
 }
 
 int sem_up(sem_t sem)
@@ -80,7 +74,27 @@ int sem_up(sem_t sem)
 	
 	preempt_disable();
 
-	
+	//increments count if no one is wating
+	if (queue_length(sem->waitQueue)==0) {
+
+		sem->count++;
+		preempt_enable;
+
+		return 0;
+	}
+
+	//unblocks one waiting thread
+	struct uthread_tcb* unblockedThread;
+	if (queue_dequeue(sem->waitQueue, (void**) &unblockedThread) < 0) {
+		preempt_enable();
+		return -1;
+	}
+
+	uthread_unblock(unblockedThread);
+	preempt_enable();
+
+	return 0;
+
 
 }
 
