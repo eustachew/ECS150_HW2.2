@@ -29,7 +29,7 @@ sem_t sem_create(size_t count) //Do
 int sem_destroy(sem_t sem) //Do
 {
 	/* TODO Phase 3 */
-	if (!sem || !queue_is_empty(sem->waitQueue))
+	if (!sem || queue_length(sem->waitQueue) > 0)
 		return -1; // Don't destroy if there are waiting threads
 
 	
@@ -77,8 +77,7 @@ int sem_up(sem_t sem)
 	if (queue_length(sem->waitQueue)==0) {
 
 		sem->count++;
-		
-		preempt_enable;
+		preempt_enable();
 
 		return 0;
 	}
