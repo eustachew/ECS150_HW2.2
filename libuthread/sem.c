@@ -29,10 +29,10 @@ sem_t sem_create(size_t count) //Do
 int sem_destroy(sem_t sem) //Do
 {
 	/* TODO Phase 3 */
-	if (!sem || queue_length(sem->waitQueue) > 0)
+	if (!sem || queue_length(sem->waitQueue) > 0){
 		return -1; // Don't destroy if there are waiting threads
+	}
 
-	
 	queue_destroy(sem->waitQueue);
 	free(sem);
 
@@ -52,13 +52,20 @@ int sem_down(sem_t sem)
 	if (sem->count > 0) {
 		sem->count--;
 		preempt_enable();
+		return 0;
+
+
 	} 
+<<<<<<< HEAD
 	else {
+=======
+	while (sem->count == 0){
+>>>>>>> refs/remotes/origin/main
 		queue_enqueue(sem->waitQueue, uthread_current);
 		uthread_block(); //switches context
-
-		sem->count--;
+		
 	}
+	sem->count--;
 
 	preempt_enable();
 	return 0;
@@ -69,15 +76,16 @@ int sem_up(sem_t sem)
 {
 	/* TODO Phase 3 */
 
-	if (!sem)
+	if (!sem){
 		return -1;
-	
+	}
+
 	preempt_disable();
+	sem->count++;
 
 	//increments count if no one is wating
 	if (queue_length(sem->waitQueue)==0) {
 
-		sem->count++;
 		preempt_enable();
 
 		return 0;
@@ -94,7 +102,6 @@ int sem_up(sem_t sem)
 	preempt_enable();
 
 	return 0;
-
 
 }
 
