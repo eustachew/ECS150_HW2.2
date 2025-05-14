@@ -56,11 +56,7 @@ int sem_down(sem_t sem)
 
 
 	} 
-<<<<<<< HEAD
-	else {
-=======
 	while (sem->count == 0){
->>>>>>> refs/remotes/origin/main
 		queue_enqueue(sem->waitQueue, uthread_current);
 		uthread_block(); //switches context
 		
