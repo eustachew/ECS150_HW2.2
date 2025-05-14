@@ -57,7 +57,10 @@ int sem_down(sem_t sem)
 
 	} 
 	while (sem->count == 0){
-		queue_enqueue(sem->waitQueue, uthread_current);
+		if(queue_enqueue(sem->waitQueue, uthread_current) < 0){
+			preempt_enable();
+			return -1;
+		}
 		uthread_block(); //switches context
 		
 	}
