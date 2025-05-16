@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "queue.h"
 #include "private.h"
@@ -43,29 +44,25 @@ int sem_destroy(sem_t sem) //Do
 int sem_down(sem_t sem)
 {
 	/* TODO Phase 3 */
-	if (!sem)
+
+	if (!sem){
 		return -1;
+	}
 	
 	preempt_disable();
 
-	
-	if (sem->count > 0) {
-		sem->count--;
-		preempt_enable();
-		return 0;
-
-
-	} 
 	while (sem->count == 0){
-		if(queue_enqueue(sem->waitQueue, uthread_current) < 0){
+		if(queue_enqueue(sem->waitQueue, uthread_current()) < 0){
 			preempt_enable();
 			return -1;
 		}
+		preempt_enable();
 		uthread_block(); //switches context
+		preempt_disable();
 		
 	}
-	sem->count--;
 
+	sem->count--;
 	preempt_enable();
 	return 0;
 	

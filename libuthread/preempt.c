@@ -22,6 +22,7 @@ struct sigaction old_action;
 struct itimerval timer;
 struct itimerval old_timer;
 sigset_t preempt_sig_set;
+bool preemption;
 
 void preempt_handler(int signum){
 	(void)signum;
@@ -30,12 +31,18 @@ void preempt_handler(int signum){
 
 void preempt_disable(void)
 {
+	if(!preemption){
+		return;
+	}
 	/* TODO Phase 4 */
 	sigprocmask(SIG_BLOCK, &preempt_sig_set, NULL);
 }
 
 void preempt_enable(void)
 {
+	if(!preemption){
+		return;
+	}
 	/* TODO Phase 4 */
 	sigprocmask(SIG_UNBLOCK, &preempt_sig_set, NULL);
 }
@@ -44,6 +51,7 @@ void preempt_start(bool preempt) //Do
 {
 	/* TODO Phase 4 */
 	if(!preempt){
+		preemption = false;
 		return;
 	}
 
@@ -66,6 +74,9 @@ void preempt_start(bool preempt) //Do
 
 void preempt_stop(void) //Do 
 {
+	if(!preemption){
+		return;
+	}
 	/* TODO Phase 4 */
 	//Restore the previous signal handler and timer that existed before we implemented our custom one
 	sigaction(SIGVTALRM, &old_action, NULL);
